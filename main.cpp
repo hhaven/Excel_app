@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <fstream>
 
 using namespace std;
 
@@ -25,8 +26,9 @@ void buscar(int, NodoDoble*&);
 void modificar(string, NodoDoble*&);
 void copiar(NodoDoble*&, NodoDoble*&);
 void cortar(NodoDoble*&, NodoDoble*&);
+void exportarCSV(string);
 
-//Definición de punteros globales
+//Definiciï¿½n de punteros globales
 NodoDoble *inicio, *fin;
 
 int main(int argc, char** argv) {
@@ -48,7 +50,8 @@ int main(int argc, char** argv) {
 		cout<<"|2) Ingresar contenido|"<<endl;
 		cout<<"|3) Copiar contenido  |"<<endl;
 		cout<<"|4) Cortar contenido  |"<<endl;
-		cout<<"|5) Salir             |"<<endl;
+		cout<<"|5) Exportar CSV      |"<<endl;
+		cout<<"|6) Salir             |"<<endl;
 		cout<<"|---------------------|"<<endl;
 		cin>>op;
 		
@@ -100,19 +103,22 @@ int main(int argc, char** argv) {
 					}
 				break;
 			case 5:
+				cout <<"Exportar csv"<<endl;
+				exportarCSV("hoja.csv");
 				break;
-					
+			case 6:
+				break;
 			default:
-				cout<<"Opción invalida"<<endl;
+				cout<<"Opciï¿½n invalida"<<endl;
 				cout<<endl;
 		}
 		
-	}while(op!=5);
+	}while(op!=6);
 	
 	return 0;
 }
 
-//Función que sólo será usada una vez, para cargar la cuadricula en pantalla
+//Funciï¿½n que sï¿½lo serï¿½ usada una vez, para cargar la cuadricula en pantalla
 void agregar(int dato){  //Se le pasa es indice del for
 	NodoDoble* nuevo_nodo = new NodoDoble();   //Creando un nuevo nodo
 	nuevo_nodo->celda.id = dato;          //insertando el identificador de celda
@@ -120,17 +126,17 @@ void agregar(int dato){  //Se le pasa es indice del for
 	nuevo_nodo->sig = NULL;              //Los siguientes punteros apuntan a null
 	nuevo_nodo->ant = NULL;
 	
-	if(inicio == NULL){           //si el inicio de la lista está vacia 
+	if(inicio == NULL){           //si el inicio de la lista estï¿½ vacia 
 		inicio = nuevo_nodo;
 	}else{
 		fin->sig = nuevo_nodo;
 		nuevo_nodo->ant = fin;
 	}
 	
-	fin = nuevo_nodo;           //El final de la lista siempre será el nuevo elemento insertado
+	fin = nuevo_nodo;           //El final de la lista siempre serï¿½ el nuevo elemento insertado
 }
 
-void mostrarInicio(){          //Función encargada de mostrar la lista de izquierda a derecha
+void mostrarInicio(){          //Funciï¿½n encargada de mostrar la lista de izquierda a derecha
 	NodoDoble* referencia2 = inicio;   // se crea un nodo de referencia que apunte al incio para emepezar a recorrerla
 	while(referencia2 != NULL){
 		cout<<referencia2->celda.valor<<" | ";   //Se imprime el valor
@@ -139,7 +145,7 @@ void mostrarInicio(){          //Función encargada de mostrar la lista de izquie
 	delete referencia2;                         //Se elimina el nodo, para liberar espacio en memoria (heap)
 }
 
-//void mostrarFinal(){			//Función encargada de mostrar la lista de derecha a izquierda. 
+//void mostrarFinal(){			//Funciï¿½n encargada de mostrar la lista de derecha a izquierda. 
 //	NodoDoble* referencia2 = fin; // Ahora el nodo de referencia se inicializa al final
 //	while(referencia2 != NULL){
 //		cout<<referencia2->celda.valor<<" | ";
@@ -148,13 +154,13 @@ void mostrarInicio(){          //Función encargada de mostrar la lista de izquie
 //	delete referencia2;
 //}
 
-void buscar(int x, NodoDoble*& referencia){  //Función encargada de buscar una celda pasada por parametro
+void buscar(int x, NodoDoble*& referencia){  //Funciï¿½n encargada de buscar una celda pasada por parametro
 	referencia = NULL;  //Se incializa la variable global referencia a NULL (vacio)
-	bool encontrado = false;  //Bandera que permitirá salir del ciclo while
+	bool encontrado = false;  //Bandera que permitirï¿½ salir del ciclo while
 	
 	if(x>(fin->celda.id/2)){  // La lista se parte a la mitad. Si x es mayor que la mitad, significar que se encuentra en la mitad derecha. 
-		referencia = fin; //Se correrá la lista de derecha a izqueirda
-		while(referencia!=NULL && !encontrado){  //Si la referencia es NULL, significa que la lista terminó de recorrerse
+		referencia = fin; //Se correrï¿½ la lista de derecha a izqueirda
+		while(referencia!=NULL && !encontrado){  //Si la referencia es NULL, significa que la lista terminï¿½ de recorrerse
 			if(referencia->celda.id == x){
 				encontrado = true;
 				cout<<"Celda encontrada"<<endl;
@@ -163,7 +169,7 @@ void buscar(int x, NodoDoble*& referencia){  //Función encargada de buscar una c
 			}
 		} 
 	}else{
-		referencia = inicio;   //Se correrá la lista de izquierda a derecha
+		referencia = inicio;   //Se correrï¿½ la lista de izquierda a derecha
 		while(referencia!=NULL && !encontrado){
 			if(referencia->celda.id == x){
 				encontrado = true;
@@ -182,8 +188,8 @@ void buscar(int x, NodoDoble*& referencia){  //Función encargada de buscar una c
 
 
 
-void modificar(string nuevo_valor, NodoDoble*& referencia){  //Función encargada de modificar la celda
-	referencia->celda.valor = nuevo_valor; //La variable global referencia, estará justo en el nodo que se desea modificar
+void modificar(string nuevo_valor, NodoDoble*& referencia){  //Funciï¿½n encargada de modificar la celda
+	referencia->celda.valor = nuevo_valor; //La variable global referencia, estarï¿½ justo en el nodo que se desea modificar
 }
 
 void copiar(NodoDoble*& referencia, NodoDoble*& referenciaCopy) {
@@ -194,4 +200,23 @@ void cortar(NodoDoble*& referencia, NodoDoble*& referenciaCopy) {
     referenciaCopy->celda.valor = referencia->celda.valor;
     referencia->celda.valor = "";
 }
+
+void exportarCSV(string filename) {
+    ofstream file(filename);
+
+    if (!file) {
+        cerr << "Error opening file." << endl;
+        return;
+    }
+
+    NodoDoble* referencia = inicio;
+    while (referencia != nullptr) {
+        file << referencia->celda.valor << ",";
+        referencia = referencia->sig;
+    }
+
+    file.close();
+    cout << "Datos exportados a " << filename << " excitosamente." << endl;
+}
+
 
