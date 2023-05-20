@@ -201,11 +201,11 @@ void cortar(NodoDoble*& referencia, NodoDoble*& referenciaCopy) {
     referencia->celda.valor = "";
 }
 
-void exportarCSV(string filename) {
-    ofstream file(filename);
+void exportarCSV(string nombredarchivo) {
+    ofstream file(nombredarchivo);
 
     if (!file) {
-        cerr << "Error opening file." << endl;
+        cerr << "Error abriendo archivo." << endl;
         return;
     }
 
@@ -216,7 +216,7 @@ void exportarCSV(string filename) {
     }
 
     file.close();
-    cout << "Datos exportados a " << filename << " excitosamente." << endl;
+    cout << "Datos exportados a " << nombredarchivo << " excitosamente." << endl;
 }
 
 
