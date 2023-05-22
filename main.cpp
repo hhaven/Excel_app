@@ -4,37 +4,37 @@
 
 using namespace std;
 
-//Prototipo de funciones
-void agregar(int);
-void mostrarInicio();
-void mostrarFinal();
-
-
 //Id puede ser una letra
 struct Celda {
 	int id;
 	string valor;
 };
 
+//Implementando los nodos para que alberguen un dato generico
+template<typename T>
 struct NodoDoble {
-	Celda celda; 
+	T dato; 
 	NodoDoble* sig;
 	NodoDoble* ant;
 };
 
-void buscar(int, NodoDoble*&);
-void modificar(string, NodoDoble*&);
-void copiar(NodoDoble*&, NodoDoble*&);
-void cortar(NodoDoble*&, NodoDoble*&);
+//Prototipo de funciones
+void agregar(int);
+void mostrarInicio();
+void mostrarFinal();
+void buscar(int, NodoDoble<Celda>*&);
+void modificar(string, NodoDoble<Celda>*&);
+void copiar(NodoDoble<Celda>*&, NodoDoble<Celda>*&);
+void cortar(NodoDoble<Celda>*&, NodoDoble<Celda>*&);
 void exportarCSV(string);
 
 //Definici�n de punteros globales
-NodoDoble *inicio, *fin;
+NodoDoble<Celda> *inicio, *fin;
 
 int main(int argc, char** argv) {
 	int op = 0, n=0, cp=0, nc=0;
 	string nuevo_valor = "";  //Contenido de un nodo
-	NodoDoble *referencia, *referenciaCopy; //Nodos de referencia para buscar, copiar y cortar
+	NodoDoble<Celda> *referencia, *referenciaCopy; //Nodos de referencia para buscar, copiar y cortar
 	
 	//Llenado de la lista con los indices y valores vacios
 	for(int i=1; i<11; i++){
@@ -120,9 +120,9 @@ int main(int argc, char** argv) {
 
 //Funci�n que s�lo ser� usada una vez, para cargar la cuadricula en pantalla
 void agregar(int dato){  //Se le pasa es indice del for
-	NodoDoble* nuevo_nodo = new NodoDoble();   //Creando un nuevo nodo
-	nuevo_nodo->celda.id = dato;          //insertando el identificador de celda
-	nuevo_nodo->celda.valor = " ";        //insertando una cadena vacia
+	NodoDoble<Celda>* nuevo_nodo = new NodoDoble<Celda>();   //Creando un nuevo nodo
+	nuevo_nodo->dato.id = dato;          //insertando el identificador de celda
+	nuevo_nodo->dato.valor = " ";        //insertando una cadena vacia
 	nuevo_nodo->sig = NULL;              //Los siguientes punteros apuntan a null
 	nuevo_nodo->ant = NULL;
 	
@@ -137,9 +137,9 @@ void agregar(int dato){  //Se le pasa es indice del for
 }
 
 void mostrarInicio(){          //Funci�n encargada de mostrar la lista de izquierda a derecha
-	NodoDoble* referencia2 = inicio;   // se crea un nodo de referencia que apunte al incio para emepezar a recorrerla
+	NodoDoble<Celda>* referencia2 = inicio;   // se crea un nodo de referencia que apunte al incio para emepezar a recorrerla
 	while(referencia2 != NULL){
-		cout<<referencia2->celda.valor<<" | ";   //Se imprime el valor
+		cout<<referencia2->dato.valor<<" | ";   //Se imprime el valor
 		referencia2 = referencia2->sig;          //Se pasa el siguiente nodo
 	}
 	delete referencia2;                         //Se elimina el nodo, para liberar espacio en memoria (heap)
@@ -148,20 +148,20 @@ void mostrarInicio(){          //Funci�n encargada de mostrar la lista de izqu
 //void mostrarFinal(){			//Funci�n encargada de mostrar la lista de derecha a izquierda. 
 //	NodoDoble* referencia2 = fin; // Ahora el nodo de referencia se inicializa al final
 //	while(referencia2 != NULL){
-//		cout<<referencia2->celda.valor<<" | ";
+//		cout<<referencia2->dato.valor<<" | ";
 //		referencia2 = referencia2->ant;  //Se pasa al nodo anterior
 //	}
 //	delete referencia2;
 //}
 
-void buscar(int x, NodoDoble*& referencia){  //Funci�n encargada de buscar una celda pasada por parametro
+void buscar(int x, NodoDoble<Celda>*& referencia){  //Funci�n encargada de buscar una celda pasada por parametro
 	referencia = NULL;  //Se incializa la variable global referencia a NULL (vacio)
 	bool encontrado = false;  //Bandera que permitir� salir del ciclo while
 	
-	if(x>(fin->celda.id/2)){  // La lista se parte a la mitad. Si x es mayor que la mitad, significar que se encuentra en la mitad derecha. 
+	if(x>(fin->dato.id/2)){  // La lista se parte a la mitad. Si x es mayor que la mitad, significar que se encuentra en la mitad derecha. 
 		referencia = fin; //Se correr� la lista de derecha a izqueirda
 		while(referencia!=NULL && !encontrado){  //Si la referencia es NULL, significa que la lista termin� de recorrerse
-			if(referencia->celda.id == x){
+			if(referencia->dato.id == x){
 				encontrado = true;
 				cout<<"Celda encontrada"<<endl;
 			}else {
@@ -171,7 +171,7 @@ void buscar(int x, NodoDoble*& referencia){  //Funci�n encargada de buscar una
 	}else{
 		referencia = inicio;   //Se correr� la lista de izquierda a derecha
 		while(referencia!=NULL && !encontrado){
-			if(referencia->celda.id == x){
+			if(referencia->dato.id == x){
 				encontrado = true;
 				cout<<"Celda encontrado"<<endl;
 			}else {
@@ -188,17 +188,17 @@ void buscar(int x, NodoDoble*& referencia){  //Funci�n encargada de buscar una
 
 
 
-void modificar(string nuevo_valor, NodoDoble*& referencia){  //Funci�n encargada de modificar la celda
-	referencia->celda.valor = nuevo_valor; //La variable global referencia, estar� justo en el nodo que se desea modificar
+void modificar(string nuevo_valor, NodoDoble<Celda>*& referencia){  //Funci�n encargada de modificar la celda
+	referencia->dato.valor = nuevo_valor; //La variable global referencia, estar� justo en el nodo que se desea modificar
 }
 
-void copiar(NodoDoble*& referencia, NodoDoble*& referenciaCopy) {
-    referenciaCopy->celda.valor = referencia->celda.valor;
+void copiar(NodoDoble<Celda>*& referencia, NodoDoble<Celda>*& referenciaCopy) {
+    referenciaCopy->dato.valor = referencia->dato.valor;
 }
 
-void cortar(NodoDoble*& referencia, NodoDoble*& referenciaCopy) {
-    referenciaCopy->celda.valor = referencia->celda.valor;
-    referencia->celda.valor = "";
+void cortar(NodoDoble<Celda>*& referencia, NodoDoble<Celda>*& referenciaCopy) {
+    referenciaCopy->dato.valor = referencia->dato.valor;
+    referencia->dato.valor = "";
 }
 
 void exportarCSV(string nombredarchivo) {
@@ -209,9 +209,9 @@ void exportarCSV(string nombredarchivo) {
         return;
     }
 
-    NodoDoble* referencia = inicio;
+    NodoDoble<Celda>* referencia = inicio;
     while (referencia != nullptr) {
-        file << referencia->celda.valor << ",";
+        file << referencia->dato.valor << ",";
         referencia = referencia->sig;
     }
 
