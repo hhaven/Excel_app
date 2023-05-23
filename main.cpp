@@ -18,21 +18,41 @@ struct NodoDoble {
 	NodoDoble* ant;
 };
 
+//A su vez, implementamos un struct que represente una lista enlazada doble, que igualmente tendra datos genericos
+template<typename T>
+struct listaEnlazadaDoble {
+	NodoDoble<T> *inicio, *fin;
+	unsigned int tamaño;
+};
+
+
+template<typename T>
+listaEnlazadaDoble<T>* iniciarListaEnlazada() {
+	listaEnlazadaDoble<T> *lista = new listaEnlazadaDoble<T>();
+	lista->fin = NULL;
+	lista->inicio = NULL;
+	lista->tamaño = 0;
+};
+
+
 //Prototipo de funciones
+void mostrarInicio(listaEnlazadaDoble<Celda>*);
+void buscar(listaEnlazadaDoble<Celda>*,int, NodoDoble<Celda>*&); 
+void exportarCSV(listaEnlazadaDoble<Celda>*,string);
+
 void agregar(int);
 void mostrarInicio();
 void mostrarFinal();
-void buscar(int, NodoDoble<Celda>*&);
 void modificar(string, NodoDoble<Celda>*&);
 void copiar(NodoDoble<Celda>*&, NodoDoble<Celda>*&);
 void cortar(NodoDoble<Celda>*&, NodoDoble<Celda>*&);
-void exportarCSV(string);
 
 //Definici�n de punteros globales
 NodoDoble<Celda> *inicio, *fin;
 
 int main(int argc, char** argv) {
 	int op = 0, n=0, cp=0, nc=0;
+	listaEnlazadaDoble<Celda> *lista = iniciarListaEnlazada<Celda>();
 	string nuevo_valor = "";  //Contenido de un nodo
 	NodoDoble<Celda> *referencia, *referenciaCopy; //Nodos de referencia para buscar, copiar y cortar
 	
@@ -58,13 +78,13 @@ int main(int argc, char** argv) {
 		switch(op){
 			case 1:
 					cout<<endl;
-					mostrarInicio();
+					mostrarInicio(lista);
 					cout<<endl;
 					break;
 			case 2: 
 					cout<<"Celda: "<<endl;
 					cin>>n;
-					buscar(n, referencia);
+					buscar(lista, n, referencia);
 					
 					if(referencia != NULL){
 						cout<<"Valor: "<<endl;
@@ -75,12 +95,12 @@ int main(int argc, char** argv) {
 			case 3:
 					cout<<"Celda a copiar: "<<endl;
 					cin>>n;
-					buscar(n, referencia);
+					buscar(lista, n, referencia);
 					
 					if(referencia != NULL){
 						cout<<"Nueva celda: "<<endl;
 						cin>>nc;
-						buscar(nc, referenciaCopy);
+						buscar(lista, nc, referenciaCopy);
 						
 						if(referenciaCopy != NULL){
 							copiar(referencia, referenciaCopy);
@@ -90,12 +110,12 @@ int main(int argc, char** argv) {
 			case 4:
 				cout<<"Celda a cortar: "<<endl;
 					cin>>n;
-					buscar(n, referencia);
+					buscar(lista, n, referencia);
 					
 					if(referencia != NULL){
 						cout<<"Nueva celda: "<<endl;
 						cin>>nc;
-						buscar(nc, referenciaCopy);
+						buscar(lista,nc, referenciaCopy);
 						
 						if(referenciaCopy != NULL){
 							cortar(referencia, referenciaCopy);
@@ -104,7 +124,7 @@ int main(int argc, char** argv) {
 				break;
 			case 5:
 				cout <<"Exportar csv"<<endl;
-				exportarCSV("hoja.csv");
+				exportarCSV(lista, "hoja.csv");
 				break;
 			case 6:
 				break;
@@ -136,8 +156,8 @@ void agregar(int dato){  //Se le pasa es indice del for
 	fin = nuevo_nodo;           //El final de la lista siempre ser� el nuevo elemento insertado
 }
 
-void mostrarInicio(){          //Funci�n encargada de mostrar la lista de izquierda a derecha
-	NodoDoble<Celda>* referencia2 = inicio;   // se crea un nodo de referencia que apunte al incio para emepezar a recorrerla
+void mostrarInicio(listaEnlazadaDoble<Celda> *lista){          //Funci�n encargada de mostrar la lista de izquierda a derecha
+	NodoDoble<Celda>* referencia2 = lista->inicio;   // se crea un nodo de referencia que apunte al incio para emepzar a recorrerla
 	while(referencia2 != NULL){
 		cout<<referencia2->dato.valor<<" | ";   //Se imprime el valor
 		referencia2 = referencia2->sig;          //Se pasa el siguiente nodo
@@ -154,12 +174,12 @@ void mostrarInicio(){          //Funci�n encargada de mostrar la lista de izqu
 //	delete referencia2;
 //}
 
-void buscar(int x, NodoDoble<Celda>*& referencia){  //Funci�n encargada de buscar una celda pasada por parametro
+void buscar(listaEnlazadaDoble<Celda> *lista, int x, NodoDoble<Celda>*& referencia){  //Funci�n encargada de buscar una celda pasada por parametro
 	referencia = NULL;  //Se incializa la variable global referencia a NULL (vacio)
 	bool encontrado = false;  //Bandera que permitir� salir del ciclo while
 	
-	if(x>(fin->dato.id/2)){  // La lista se parte a la mitad. Si x es mayor que la mitad, significar que se encuentra en la mitad derecha. 
-		referencia = fin; //Se correr� la lista de derecha a izqueirda
+	if(x>((lista->fin)->dato.id/2)){  // La lista se parte a la mitad. Si x es mayor que la mitad, significar que se encuentra en la mitad derecha. 
+		referencia = lista->fin; //Se correr� la lista de derecha a izqueirda
 		while(referencia!=NULL && !encontrado){  //Si la referencia es NULL, significa que la lista termin� de recorrerse
 			if(referencia->dato.id == x){
 				encontrado = true;
@@ -169,7 +189,7 @@ void buscar(int x, NodoDoble<Celda>*& referencia){  //Funci�n encargada de bus
 			}
 		} 
 	}else{
-		referencia = inicio;   //Se correr� la lista de izquierda a derecha
+		referencia = lista->inicio;   //Se correr� la lista de izquierda a derecha
 		while(referencia!=NULL && !encontrado){
 			if(referencia->dato.id == x){
 				encontrado = true;
@@ -201,7 +221,7 @@ void cortar(NodoDoble<Celda>*& referencia, NodoDoble<Celda>*& referenciaCopy) {
     referencia->dato.valor = "";
 }
 
-void exportarCSV(string nombredarchivo) {
+void exportarCSV(listaEnlazadaDoble<Celda> *lista, string nombredarchivo) {
     ofstream file(nombredarchivo);
 
     if (!file) {
@@ -209,7 +229,7 @@ void exportarCSV(string nombredarchivo) {
         return;
     }
 
-    NodoDoble<Celda>* referencia = inicio;
+    NodoDoble<Celda>* referencia = lista->inicio;
     while (referencia != nullptr) {
         file << referencia->dato.valor << ",";
         referencia = referencia->sig;
