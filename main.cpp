@@ -159,6 +159,8 @@ void agregar(listaEnlazadaDoble<T> *lista, T dato){  //Se le pasa un puntero a l
 	}
 	
 	lista->fin = nuevo_nodo;           //El final de la lista siempre ser� el nuevo elemento insertado
+	lista->tamaño++;
+	cout << lista->tamaño;
 }
 
 
