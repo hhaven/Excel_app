@@ -40,7 +40,9 @@ void mostrarInicio(listaEnlazadaDoble<Celda>*);
 void buscar(listaEnlazadaDoble<Celda>*,int, NodoDoble<Celda>*&); 
 void exportarCSV(listaEnlazadaDoble<Celda>*,string);
 
-void agregar(int);
+template<typename T>
+void agregar(listaEnlazadaDoble<T>*, T); //Modificada para ser generica
+
 void mostrarInicio();
 void mostrarFinal();
 void modificar(string, NodoDoble<Celda>*&);
@@ -56,9 +58,12 @@ int main(int argc, char** argv) {
 	string nuevo_valor = "";  //Contenido de un nodo
 	NodoDoble<Celda> *referencia, *referenciaCopy; //Nodos de referencia para buscar, copiar y cortar
 	
+	Celda nueva_celda;
+	nueva_celda.valor = nuevo_valor;
 	//Llenado de la lista con los indices y valores vacios
 	for(int i=1; i<11; i++){
-		agregar(i);
+		nueva_celda.id = i;
+		agregar(lista, nueva_celda);//Se pasa por valor una celda para que la inserte en la lista
 	}
 	
 	do{
@@ -139,22 +144,23 @@ int main(int argc, char** argv) {
 }
 
 //Funci�n que s�lo ser� usada una vez, para cargar la cuadricula en pantalla
-void agregar(int dato){  //Se le pasa es indice del for
-	NodoDoble<Celda>* nuevo_nodo = new NodoDoble<Celda>();   //Creando un nuevo nodo
-	nuevo_nodo->dato.id = dato;          //insertando el identificador de celda
-	nuevo_nodo->dato.valor = " ";        //insertando una cadena vacia
+template<typename T>
+void agregar(listaEnlazadaDoble<T> *lista, T dato){  //Se le pasa un puntero a la lista, y el dato que se almacenara en esta
+	NodoDoble<T>* nuevo_nodo = new NodoDoble<T>();   //Creando un nuevo nodo
+	nuevo_nodo->dato = dato;
 	nuevo_nodo->sig = NULL;              //Los siguientes punteros apuntan a null
 	nuevo_nodo->ant = NULL;
 	
-	if(inicio == NULL){           //si el inicio de la lista est� vacia 
-		inicio = nuevo_nodo;
+	if(lista->inicio == NULL){           //si el inicio de la lista est� vacia 
+		lista->inicio = nuevo_nodo;
 	}else{
-		fin->sig = nuevo_nodo;
-		nuevo_nodo->ant = fin;
+		(lista->fin)->sig = nuevo_nodo;
+		nuevo_nodo->ant = lista->fin;
 	}
 	
-	fin = nuevo_nodo;           //El final de la lista siempre ser� el nuevo elemento insertado
+	lista->fin = nuevo_nodo;           //El final de la lista siempre ser� el nuevo elemento insertado
 }
+
 
 void mostrarInicio(listaEnlazadaDoble<Celda> *lista){          //Funci�n encargada de mostrar la lista de izquierda a derecha
 	NodoDoble<Celda>* referencia2 = lista->inicio;   // se crea un nodo de referencia que apunte al incio para emepzar a recorrerla
