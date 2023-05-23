@@ -1,6 +1,8 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <functional>
+#include <optional> //Esta libreria requiere C++ 17
 
 using namespace std;
 
@@ -32,16 +34,17 @@ listaEnlazadaDoble<T>* iniciarListaEnlazada() {
 	lista->fin = NULL;
 	lista->inicio = NULL;
 	lista->tamaño = 0;
+	return lista;
 };
 
 
 //Prototipo de funciones
+template<typename T>
+void agregar(listaEnlazadaDoble<T>*, T); //Modificada para ser generica
+
 void mostrarInicio(listaEnlazadaDoble<Celda>*);
 void buscar(listaEnlazadaDoble<Celda>*,int, NodoDoble<Celda>*&); 
 void exportarCSV(listaEnlazadaDoble<Celda>*,string);
-
-template<typename T>
-void agregar(listaEnlazadaDoble<T>*, T); //Modificada para ser generica
 
 void mostrarInicio();
 void mostrarFinal();
@@ -49,22 +52,40 @@ void modificar(string, NodoDoble<Celda>*&);
 void copiar(NodoDoble<Celda>*&, NodoDoble<Celda>*&);
 void cortar(NodoDoble<Celda>*&, NodoDoble<Celda>*&);
 
+template<typename T>
+optional<T> buscarPorIndice(listaEnlazadaDoble<T> *lista, int); //Implementacion que busca formular de forma generica, lo que impide implementarse usando un valor por id. Por lo que usara la posicion en la lista en su lugar
+template<typename T>
+void forEach(listaEnlazadaDoble<T>*, function< void(T) >); //Recibe como parametros la lista a usar y una lambda que ejecuta para cada mienbro de la lista
+
 //Definici�n de punteros globales
 NodoDoble<Celda> *inicio, *fin;
 
 int main(int argc, char** argv) {
 	int op = 0, n=0, cp=0, nc=0;
 	listaEnlazadaDoble<Celda> *lista = iniciarListaEnlazada<Celda>();
+	listaEnlazadaDoble<listaEnlazadaDoble<Celda>> *matriz = iniciarListaEnlazada<listaEnlazadaDoble<Celda>>();
 	string nuevo_valor = "";  //Contenido de un nodo
 	NodoDoble<Celda> *referencia, *referenciaCopy; //Nodos de referencia para buscar, copiar y cortar
-	
+	optional<listaEnlazadaDoble<Celda>> l = nullopt;//Variable que solo sirve para revibir datos de funciones que retornen optional
+
 	Celda nueva_celda;
 	nueva_celda.valor = nuevo_valor;
 	//Llenado de la lista con los indices y valores vacios
-	for(int i=1; i<11; i++){
-		nueva_celda.id = i;
-		agregar(lista, nueva_celda);//Se pasa por valor una celda para que la inserte en la lista
+	for(int j=1; j<=5; j++){
+		//Se limpia la lista usada
+		lista->inicio=NULL;
+		lista->fin=NULL;
+		lista->tamaño=0;
+		//Poblamos dicha lista con nodos
+		for (int i = 1; i <= 5; i++) {
+					nueva_celda.id = i;
+					agregar(lista, nueva_celda);//Se pasa por valor una celda para que la inserte en la lista
+				}
+
+		agregar(matriz, *lista);//Se pasa por valor la lista poblada
 	}
+
+	//lista = &buscarPorIndice(matriz,1)
 	
 	do{
 		cout<<endl;
@@ -83,13 +104,22 @@ int main(int argc, char** argv) {
 		switch(op){
 			case 1:
 					cout<<endl;
-					mostrarInicio(lista);
+					//Al parecer, al necesitar otro parametro ademas de la lamda, hace que el compilador tenga problemas determinando el tipo T
+					forEach<listaEnlazadaDoble<Celda>> (matriz, 
+						[](listaEnlazadaDoble<Celda> e) { mostrarInicio(&e); });
+					//Por eso hay que especificarlo explicitamente al invocar la funcion.
 					cout<<endl;
 					break;
 			case 2: 
-					cout<<"Celda: "<<endl;
+					cout<<"Fila: "<<endl;
 					cin>>n;
-					buscar(lista, n, referencia);
+					l = buscarPorIndice(matriz, n-1); //l es una variable de tipo opcional de una lista de celdas, que es lo que retornara la funcion buscar por indice
+					
+					cout<<"Columna: "<<endl;
+					cin>>n;
+					if(l.has_value()) {//Comprueba si el valor opcional recibio una lista valida
+						*lista = l.value();
+						buscar(lista, n, referencia);}
 					
 					if(referencia != NULL){
 						cout<<"Valor: "<<endl;
@@ -171,6 +201,7 @@ void mostrarInicio(listaEnlazadaDoble<Celda> *lista){          //Funci�n encar
 		referencia2 = referencia2->sig;          //Se pasa el siguiente nodo
 	}
 	delete referencia2;                         //Se elimina el nodo, para liberar espacio en memoria (heap)
+	cout << endl;
 }
 
 //void mostrarFinal(){			//Funci�n encargada de mostrar la lista de derecha a izquierda. 
@@ -214,6 +245,40 @@ void buscar(listaEnlazadaDoble<Celda> *lista, int x, NodoDoble<Celda>*& referenc
 	
 }
 
+template<typename T> //T es un template, representa el tipo de variable. En este caso podria ser una dato o una lista doble de celdas
+optional<T> buscarPorIndice(listaEnlazadaDoble<T> *lista, int indice) { //Optional, el tipo de retorno, es los mas parecido a nullable que he encontrado en C++
+       int tamañoDesde0 = (lista->tamaño)-1;
+       //Comprueba si el valor del indice no sea mayor que el tamaño de la lista
+       if(indice > tamañoDesde0 -1 || indice < 0)
+           return nullopt;//Si es el caso retorna nullopt
+       
+       int i = 0;
+       NodoDoble<T> *n = NULL;
+       if(indice > (tamañoDesde0/2)){  // La lista se parte a la mitad. Si index es mayor que la mitad, significar que se encuentra en la mitad derecha. 
+    	n = lista->fin; //Se correr� la lista de derecha a izqueirda
+        i = tamañoDesde0;
+    	while(i > indice){
+    		i--;
+            n = n->ant;
+    	} 
+    }else{
+    	n = lista->inicio;   //Se correr� la lista de izquierda a derecha
+    	while(i < indice){
+    		i++;
+            n = n->sig;
+    	} 
+    }
+       return n->dato;	    
+}
+
+template<typename T>
+void forEach(listaEnlazadaDoble<T> *lista, function< void(T) > lambda) {
+    NodoDoble<T> *n = lista->inicio;
+    while(n != NULL) {
+        lambda(n->dato);
+        n = n->sig;
+    }
+}
 
 
 void modificar(string nuevo_valor, NodoDoble<Celda>*& referencia){  //Funci�n encargada de modificar la celda
