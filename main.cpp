@@ -37,14 +37,18 @@ listaEnlazadaDoble<T>* iniciarListaEnlazada() {
 	return lista;
 };
 
+//Alias para mejorar la legibilidad del documento
+using Fila = listaEnlazadaDoble<Celda>;
+using Matriz = listaEnlazadaDoble<Fila>;
+
 
 //Prototipo de funciones
 template<typename T>
 void agregar(listaEnlazadaDoble<T>*, T); //Modificada para ser generica
 
-void mostrarInicio(listaEnlazadaDoble<Celda>*);
-void buscar(listaEnlazadaDoble<Celda>*,int, NodoDoble<Celda>*&); 
-void exportarCSV(listaEnlazadaDoble<Celda>*,string);
+void mostrarInicio(Fila*);
+void buscar(Fila*,int, NodoDoble<Celda>*&); 
+void exportarCSV(Fila*,string);
 
 void mostrarInicio();
 void mostrarFinal();
@@ -62,11 +66,11 @@ NodoDoble<Celda> *inicio, *fin;
 
 int main(int argc, char** argv) {
 	int op = 0, n=0, cp=0, nc=0;
-	listaEnlazadaDoble<Celda> *lista = iniciarListaEnlazada<Celda>();
-	listaEnlazadaDoble<listaEnlazadaDoble<Celda>> *matriz = iniciarListaEnlazada<listaEnlazadaDoble<Celda>>();
+	Fila *lista = iniciarListaEnlazada<Celda>();
+	Matriz *matriz = iniciarListaEnlazada<Fila>();
 	string nuevo_valor = "";  //Contenido de un nodo
 	NodoDoble<Celda> *referencia, *referenciaCopy; //Nodos de referencia para buscar, copiar y cortar
-	//optional<listaEnlazadaDoble<Celda>> l = nullopt;//Variable que solo sirve para revibir datos de funciones que retornen optional
+	//optional<Fila> l = nullopt;//Variable que solo sirve para revibir datos de funciones que retornen optional
 
 	Celda nueva_celda;
 	nueva_celda.valor = nuevo_valor;
@@ -105,8 +109,8 @@ int main(int argc, char** argv) {
 			case 1:
 					cout<<endl;
 					//Al parecer, al necesitar otro parametro ademas de la lamda, hace que el compilador tenga problemas determinando el tipo T
-					forEach<listaEnlazadaDoble<Celda>> (matriz, 
-						[](listaEnlazadaDoble<Celda> e) { mostrarInicio(&e); });
+					forEach<Fila> (matriz, 
+						[](Fila e) { mostrarInicio(&e); });
 					//Por eso hay que especificarlo explicitamente al invocar la funcion.
 					cout<<endl;
 					break;
@@ -193,7 +197,7 @@ void agregar(listaEnlazadaDoble<T> *lista, T dato){  //Se le pasa un puntero a l
 }
 
 
-void mostrarInicio(listaEnlazadaDoble<Celda> *lista){          //Funci�n encargada de mostrar la lista de izquierda a derecha
+void mostrarInicio(Fila *lista){          //Funci�n encargada de mostrar la lista de izquierda a derecha
 	NodoDoble<Celda>* referencia2 = lista->inicio;   // se crea un nodo de referencia que apunte al incio para emepzar a recorrerla
 	while(referencia2 != NULL){
 		cout<<referencia2->dato.valor<<" | ";   //Se imprime el valor
@@ -212,7 +216,7 @@ void mostrarInicio(listaEnlazadaDoble<Celda> *lista){          //Funci�n encar
 //	delete referencia2;
 //}
 
-void buscar(listaEnlazadaDoble<Celda> *lista, int x, NodoDoble<Celda>*& referencia){  //Funci�n encargada de buscar una celda pasada por parametro
+void buscar(Fila *lista, int x, NodoDoble<Celda>*& referencia){  //Funci�n encargada de buscar una celda pasada por parametro
 	referencia = NULL;  //Se incializa la variable global referencia a NULL (vacio)
 	bool encontrado = false;  //Bandera que permitir� salir del ciclo while
 	
@@ -294,7 +298,7 @@ void cortar(NodoDoble<Celda>*& referencia, NodoDoble<Celda>*& referenciaCopy) {
     referencia->dato.valor = "";
 }
 
-void exportarCSV(listaEnlazadaDoble<Celda> *lista, string nombredarchivo) {
+void exportarCSV(Fila *lista, string nombredarchivo) {
     ofstream file(nombredarchivo);
 
     if (!file) {
