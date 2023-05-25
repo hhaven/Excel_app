@@ -2,7 +2,7 @@
 #include <string>
 #include <fstream>
 #include <functional>
-#include <optional> //Esta libreria requiere C++ 17
+//#include <optional> //Esta libreria requiere C++ 17
 
 using namespace std;
 
@@ -53,7 +53,7 @@ void copiar(NodoDoble<Celda>*&, NodoDoble<Celda>*&);
 void cortar(NodoDoble<Celda>*&, NodoDoble<Celda>*&);
 
 template<typename T>
-optional<T> buscarPorIndice(listaEnlazadaDoble<T> *lista, int); //Implementacion que busca formular de forma generica, lo que impide implementarse usando un valor por id. Por lo que usara la posicion en la lista en su lugar
+T* buscarPorIndice(listaEnlazadaDoble<T> *lista, int); //Implementacion que busca formular de forma generica, lo que impide implementarse usando un valor por id. Por lo que usara la posicion en la lista en su lugar
 template<typename T>
 void forEach(listaEnlazadaDoble<T>*, function< void(T) >); //Recibe como parametros la lista a usar y una lambda que ejecuta para cada mienbro de la lista
 
@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
 	listaEnlazadaDoble<listaEnlazadaDoble<Celda>> *matriz = iniciarListaEnlazada<listaEnlazadaDoble<Celda>>();
 	string nuevo_valor = "";  //Contenido de un nodo
 	NodoDoble<Celda> *referencia, *referenciaCopy; //Nodos de referencia para buscar, copiar y cortar
-	optional<listaEnlazadaDoble<Celda>> l = nullopt;//Variable que solo sirve para revibir datos de funciones que retornen optional
+	//optional<listaEnlazadaDoble<Celda>> l = nullopt;//Variable que solo sirve para revibir datos de funciones que retornen optional
 
 	Celda nueva_celda;
 	nueva_celda.valor = nuevo_valor;
@@ -113,12 +113,11 @@ int main(int argc, char** argv) {
 			case 2: 
 					cout<<"Fila: "<<endl;
 					cin>>n;
-					l = buscarPorIndice(matriz, n-1); //l es una variable de tipo opcional de una lista de celdas, que es lo que retornara la funcion buscar por indice
+					lista = buscarPorIndice(matriz, n-1); //l es una variable de tipo opcional de una lista de celdas, que es lo que retornara la funcion buscar por indice
 					
 					cout<<"Columna: "<<endl;
 					cin>>n;
-					if(l.has_value()) {//Comprueba si el valor opcional recibio una lista valida
-						*lista = l.value();
+					if(lista != NULL) {//Comprueba si el valor opcional recibio una lista valida	
 						buscar(lista, n, referencia);}
 					
 					if(referencia != NULL){
@@ -246,11 +245,11 @@ void buscar(listaEnlazadaDoble<Celda> *lista, int x, NodoDoble<Celda>*& referenc
 }
 
 template<typename T> //T es un template, representa el tipo de variable. En este caso podria ser una dato o una lista doble de celdas
-optional<T> buscarPorIndice(listaEnlazadaDoble<T> *lista, int indice) { //Optional, el tipo de retorno, es los mas parecido a nullable que he encontrado en C++
+T* buscarPorIndice(listaEnlazadaDoble<T> *lista, int indice) { //Ahora el retorno es un puntero. Si es nulo, dabremos que no encontro nada, caso contrario podremos acceder al valor
        int tamañoDesde0 = (lista->tamaño)-1;
        //Comprueba si el valor del indice no sea mayor que el tamaño de la lista
-       if(indice > tamañoDesde0 -1 || indice < 0)
-           return nullopt;//Si es el caso retorna nullopt
+       if(indice > tamañoDesde0 || indice < 0)
+           return NULL;//Si es el caso retorna nullopt
        
        int i = 0;
        NodoDoble<T> *n = NULL;
@@ -268,7 +267,8 @@ optional<T> buscarPorIndice(listaEnlazadaDoble<T> *lista, int indice) { //Option
             n = n->sig;
     	} 
     }
-       return n->dato;	    
+	cout<<"Fila: "<<i<<endl;
+    return &(n->dato);	    
 }
 
 template<typename T>
