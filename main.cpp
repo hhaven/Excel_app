@@ -46,11 +46,10 @@ using Matriz = listaEnlazadaDoble<Fila>;
 template<typename T>
 void agregar(listaEnlazadaDoble<T>*, T); //Modificada para ser generica
 
-void mostrarInicio(Fila*);
+void mostrarInicio(Fila*,NodoDoble<Celda>*);
 void buscar(Fila*,int, NodoDoble<Celda>*&); 
 void exportarCSV(Fila*,string);
 
-void mostrarInicio();
 void mostrarFinal();
 void modificar(string, NodoDoble<Celda>*&);
 void copiar(NodoDoble<Celda>*&, NodoDoble<Celda>*&);
@@ -88,21 +87,28 @@ int main(int argc, char** argv) {
 
 		agregar(matriz, *lista);//Se pasa por valor la lista poblada
 	}
+	referencia = (matriz->inicio)->dato.inicio;
 
-	//lista = &buscarPorIndice(matriz,1)
+
+	lista = buscarPorIndice(matriz,0);
 	
 	do{
 		cout<<endl;
-		cout<<"|---------------------|"<<endl;
-		cout<<"|Menu                 |"<<endl;
-		cout<<"|---------------------|"<<endl;
-		cout<<"|1) Mostrar contenido |"<<endl;
-		cout<<"|2) Ingresar contenido|"<<endl;
-		cout<<"|3) Copiar contenido  |"<<endl;
-		cout<<"|4) Cortar contenido  |"<<endl;
-		cout<<"|5) Exportar CSV      |"<<endl;
-		cout<<"|6) Salir             |"<<endl;
-		cout<<"|---------------------|"<<endl;
+		cout<<"|-------------------------|"<<endl;
+		cout<<"|Menu                     |"<<endl;
+		cout<<"|-------------------------|"<<endl;
+		cout<<"|1)  Mostrar contenido    |"<<endl;
+		cout<<"|2)  Ingresar contenido   |"<<endl;
+		cout<<"|3)  Copiar contenido     |"<<endl;
+		cout<<"|4)  Cortar contenido     |"<<endl;
+		cout<<"|5)  Exportar CSV         |"<<endl;
+		cout<<"|6)  Saltar a celda       |"<<endl;
+		cout<<"|7)  Mover a la izquierda |"<<endl;
+		cout<<"|8)  Mover a la derecha   |"<<endl;
+		cout<<"|9)  Mover a arriba       |"<<endl;
+		cout<<"|10) Mover a abajo        |"<<endl;
+		cout<<"|11) Salir                |"<<endl;
+		cout<<"|-------------------------|"<<endl;
 		cin>>op;
 		
 		switch(op){
@@ -110,20 +116,12 @@ int main(int argc, char** argv) {
 					cout<<endl;
 					//Al parecer, al necesitar otro parametro ademas de la lamda, hace que el compilador tenga problemas determinando el tipo T
 					forEach<Fila> (matriz, 
-						[](Fila e) { mostrarInicio(&e); });
+						[referencia](Fila e) { mostrarInicio(&e, referencia); });//Ahora tiene una referencia al nodo actual, para poder indicarlo al mostrar la matriz
 					//Por eso hay que especificarlo explicitamente al invocar la funcion.
 					cout<<endl;
 					break;
 			case 2: 
-					cout<<"Fila: "<<endl;
-					cin>>n;
-					lista = buscarPorIndice(matriz, n-1); //l es una variable de tipo opcional de una lista de celdas, que es lo que retornara la funcion buscar por indice
-					
-					cout<<"Columna: "<<endl;
-					cin>>n;
-					if(lista != NULL) {//Comprueba si el valor opcional recibio una lista valida	
-						buscar(lista, n, referencia);}
-					
+					//La parte de seleccionar celda ahora es su propia funcion en el menu
 					if(referencia != NULL){
 						cout<<"Valor: "<<endl;
 						cin>>nuevo_valor;
@@ -165,13 +163,40 @@ int main(int argc, char** argv) {
 				exportarCSV(lista, "hoja.csv");
 				break;
 			case 6:
+				cout<<"Fila: "<<endl;
+				cin>>n;
+				lista = buscarPorIndice(matriz, n-1); //l es una variable de tipo opcional de una lista de celdas, que es lo que retornara la funcion buscar por indice
+				
+				cout<<"Columna: "<<endl;
+				cin>>n;
+				referenciaCopy = referencia;; //Creamos un respaldo de la celda actual
+				if(lista != NULL) {//Comprueba si el valor opcional recibio una lista valida	
+					buscar(lista, n, referencia);}
+				if(referencia == NULL) {
+					referencia = referenciaCopy;} //SI referencia era nula, vuelve al valor que tenia antes
+				referenciaCopy = NULL;//La dejamos como nulo para evitar interferencias con otras partes del codigo donde se use
+
+				break;			
+			case 7:
+				if(referencia->ant != NULL)
+					referencia = referencia->ant;
+				break;
+			case 8:
+				if(referencia->sig != NULL)
+					referencia = referencia->sig;
+				break;
+			case 9:
+				break;
+			case 10:
+				break;
+			case 11:
 				break;
 			default:
 				cout<<"Opci�n invalida"<<endl;
 				cout<<endl;
 		}
 		
-	}while(op!=6);
+	}while(op!=11);
 	
 	return 0;
 }
@@ -182,7 +207,7 @@ void agregar(listaEnlazadaDoble<T> *lista, T dato){  //Se le pasa un puntero a l
 	NodoDoble<T>* nuevo_nodo = new NodoDoble<T>();   //Creando un nuevo nodo
 	nuevo_nodo->dato = dato;
 	nuevo_nodo->sig = NULL;              //Los siguientes punteros apuntan a null
-	nuevo_nodo->ant = NULL;
+	nuevo_nodo->ant = NULL;	
 	
 	if(lista->inicio == NULL){           //si el inicio de la lista est� vacia 
 		lista->inicio = nuevo_nodo;
@@ -197,10 +222,23 @@ void agregar(listaEnlazadaDoble<T> *lista, T dato){  //Se le pasa un puntero a l
 }
 
 
-void mostrarInicio(Fila *lista){          //Funci�n encargada de mostrar la lista de izquierda a derecha
+void mostrarInicio(Fila *lista, NodoDoble<Celda>* actual){          //Funci�n encargada de mostrar la lista de izquierda a derecha
 	NodoDoble<Celda>* referencia2 = lista->inicio;   // se crea un nodo de referencia que apunte al incio para emepzar a recorrerla
+	char indicadorActual=' ';
+	string dato;
+
+	for (int i = 0; i < lista->tamaño; i++) //Linea delimitadora
+		cout<<"|----------";
+	cout<<"|\n|";	
+	
 	while(referencia2 != NULL){
-		cout<<referencia2->dato.valor<<" | ";   //Se imprime el valor
+		dato = referencia2->dato.valor;
+		if(referencia2->dato.valor.size() < 8)
+			dato.insert(dato.size(), 8 - dato.size(), ' ');
+		else
+			dato = dato.substr(0,8);
+		indicadorActual = (actual==referencia2) ? '*': ' ';
+		cout<<indicadorActual<<dato<<indicadorActual<<"|";   //Se imprime el valor
 		referencia2 = referencia2->sig;          //Se pasa el siguiente nodo
 	}
 	delete referencia2;                         //Se elimina el nodo, para liberar espacio en memoria (heap)
@@ -216,12 +254,12 @@ void mostrarInicio(Fila *lista){          //Funci�n encargada de mostrar la li
 //	delete referencia2;
 //}
 
-void buscar(Fila *lista, int x, NodoDoble<Celda>*& referencia){  //Funci�n encargada de buscar una celda pasada por parametro
+void buscar(Fila *fila, int x, NodoDoble<Celda>*& referencia){  //Funci�n encargada de buscar una celda pasada por parametro
 	referencia = NULL;  //Se incializa la variable global referencia a NULL (vacio)
 	bool encontrado = false;  //Bandera que permitir� salir del ciclo while
 	
-	if(x>((lista->fin)->dato.id/2)){  // La lista se parte a la mitad. Si x es mayor que la mitad, significar que se encuentra en la mitad derecha. 
-		referencia = lista->fin; //Se correr� la lista de derecha a izqueirda
+	if(x>((fila->fin)->dato.id/2)){  // La lista se parte a la mitad. Si x es mayor que la mitad, significar que se encuentra en la mitad derecha. 
+		referencia = fila->fin; //Se correr� la lista de derecha a izqueirda
 		while(referencia!=NULL && !encontrado){  //Si la referencia es NULL, significa que la lista termin� de recorrerse
 			if(referencia->dato.id == x){
 				encontrado = true;
@@ -231,7 +269,7 @@ void buscar(Fila *lista, int x, NodoDoble<Celda>*& referencia){  //Funci�n enc
 			}
 		} 
 	}else{
-		referencia = lista->inicio;   //Se correr� la lista de izquierda a derecha
+		referencia = fila->inicio;   //Se correr� la lista de izquierda a derecha
 		while(referencia!=NULL && !encontrado){
 			if(referencia->dato.id == x){
 				encontrado = true;
